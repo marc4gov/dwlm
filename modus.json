@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.hypermode.com/modus.json",
+  "endpoints": {
+    "default": {
+      "type": "graphql",
+      "path": "/graphql",
+      "auth": "bearer-token"
+    }
+  },
+  "connections": {
+    "postgresql":{
+      "type": "postgresql", 
+      "connString": "postgresql://{{PG_USER}}:{{PG_PASSWORD}}@localhost:5432/hhvr"
+    },
+    "neo4j": {
+      "type": "neo4j",
+      "dbUri": "neo4j+s://24770147.databases.neo4j.io",
+      "username": "neo4j",
+      "password": "{{NEO4J_PASSWORD}}"
+    },
+    "anthropic": {
+      "type": "http",
+      "baseUrl": "https://api.anthropic.com/",
+      "headers": {
+        "x-api-key": "{{API_KEY}}",
+        "anthropic-version": "2023-06-01"
+      }
+    }
+  },
+  "models": {
+    "text-generator": {
+      "sourceModel": "claude-3-5-sonnet-20240620",
+      "connection": "anthropic",
+      "path": "v1/messages"
+    },
+    "minilm": {
+      "sourceModel": "sentence-transformers/all-MiniLM-L6-v2", 
+      "provider": "hugging-face", 
+      "connection": "hypermode" 
+    }
+  },
+  "collections": {
+    "myProducts": {
+      "searchMethods": {
+        "searchMethod": {
+          "embedder": "myEmbedder",
+          "index": {
+            "type": "sequential"
+          }
+        }
+      }
+    }
+  }
+}
