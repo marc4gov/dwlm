@@ -18,12 +18,24 @@
       "username": "neo4j",
       "password": "{{NEO4J_PASSWORD}}"
     },
+    "dgraph": {
+      "type": "dgraph",
+      "grpcTarget": "nameless-brook-630049.grpc.eu-central-1.aws.cloud.dgraph.io:443",
+      "key": "{{DGRAPH_API_KEY}}"
+    },
     "anthropic": {
       "type": "http",
       "baseUrl": "https://api.anthropic.com/",
       "headers": {
-        "x-api-key": "{{API_KEY}}",
+        "x-api-key": "{{ANTHROPIC_API_KEY}}",
         "anthropic-version": "2023-06-01"
+      }
+    },
+    "huggingface": {
+      "type": "http",
+      "baseUrl": "https://api-inference.huggingface.co/models/",
+      "headers": {
+        "Authorization": "Bearer {{HF_API_KEY}}"
       }
     }
   },
@@ -37,13 +49,18 @@
       "sourceModel": "sentence-transformers/all-MiniLM-L6-v2", 
       "provider": "hugging-face", 
       "connection": "hypermode" 
+    },
+    "classifier": {
+      "sourceModel": "nlptown/bert-base-multilingual-uncased-sentiment",
+      "connection": "huggingface",
+      "path": "nlptown/bert-base-multilingual-uncased-sentiment"
     }
   },
   "collections": {
     "myProducts": {
       "searchMethods": {
-        "searchMethod": {
-          "embedder": "myEmbedder",
+        "searchMethod1": {
+          "embedder": "embed",
           "index": {
             "type": "sequential"
           }

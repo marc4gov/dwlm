@@ -1,0 +1,14 @@
+[project]
+name = "dwlm"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "bs4>=0.0.2",
+    "onnx>=1.17.0",
+    "onnxruntime>=1.20.1",
+    "pydgraph>=24.1.0",
+    "pyppeteer>=2.0.0",
+    "torch>=2.5.1",
+]
