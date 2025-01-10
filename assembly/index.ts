@@ -1,24 +1,3 @@
-import { postgresql } from "@hypermode/modus-sdk-as"
-
-// the name of the PostgreSQL connection, as specified in the modus.json manifest
-const connection = "postgresql"
-
-@json
-class Person {
-  name!: string
-  age!: i32
-}
-
-export function getPerson(name: string): Person {
-  const query = "select * from persons where name = $1"
-
-  const params = new postgresql.Params()
-  params.push(name)
-
-  const response = postgresql.query<Person>(connection, query, params)
-  return response.rows[0]
-}
-
 import { models } from "@hypermode/modus-sdk-as"
 
 import {
