@@ -6,9 +6,15 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "bs4>=0.0.2",
+    "fastapi>=0.115.6",
+    "numpy>=2.2.1",
     "onnx>=1.17.0",
     "onnxruntime>=1.20.1",
+    "pandas>=2.2.3",
+    "pydantic>=2.10.5",
     "pydgraph>=24.1.0",
     "pyppeteer>=2.0.0",
+    "requests>=2.32.3",
     "torch>=2.5.1",
+    "uvicorn>=0.34.0",
 ]

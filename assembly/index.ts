@@ -113,9 +113,9 @@ export function searchSimilarProducts(
 
 
 import { dgraph } from "@hypermode/modus-sdk-as"
-import { PumpingStation, EnergyProfile, Project} from "./classes"
+import { PumpingStation } from "./classes"
 import { embedText } from "./embeddings"
-import { buildPumpingStationMutationJson, buildEnergyProfileMutationJson, buildProjectMutationJson} from "./pumpingstation-helpers"
+import { buildPumpingStationMutationJson } from "./pumpingstation-helpers"
 import {
   deleteNodePredicates,
   ListOf,
@@ -143,26 +143,6 @@ export function upsertPumpingStation(pumpingstation: PumpingStation): Map<string
   return uids
 }
 
-export function upsertEnergyProfile(energyprofile: EnergyProfile): Map<string, string> | null {
-  var payload = buildEnergyProfileMutationJson(DGRAPH_CONNECTION, energyprofile)
-
-  // const embedding = embedText([energyprofile.day.toString(), energyprofile.month.toString()])[0]
-  // payload = addEmbeddingToJson(payload, "EnergyProfile.embedding", embedding)
-
-  const mutations: dgraph.Mutation[] = [new dgraph.Mutation(payload)]
-  const uids = dgraph.execute(DGRAPH_CONNECTION, new dgraph.Request(null, mutations)).Uids
-
-  return uids
-}
-
-export function upsertProject(project: Project): Map<string, string> | null {
-  var payload = buildProjectMutationJson(DGRAPH_CONNECTION, project)
-
-  const mutations: dgraph.Mutation[] = [new dgraph.Mutation(payload)]
-  const uids = dgraph.execute(DGRAPH_CONNECTION, new dgraph.Request(null, mutations)).Uids
-
-  return uids
-}
 
 // Dgraph returns an array of objects
 @json
@@ -198,11 +178,6 @@ export function getPumpingStation(id  : string): PumpingStation | null {
 
   const body = `
     PumpingStation.id
-    PumpingStation.name
-    PumpingStation.geoloc 
-    PumpingStation.flow_rate
-    PumpingStation.projects
-    PumpingStation.energyprofiles
   `
   return getEntityById<PumpingStation>(DGRAPH_CONNECTION, "PumpingStation.id", id, body)
 }
@@ -210,16 +185,7 @@ export function getPumpingStation(id  : string): PumpingStation | null {
  * Delete a pumping station by its id
  */
 
-export function deletePumpingStation(id: string): void {
-  deleteNodePredicates(DGRAPH_CONNECTION, `eq(PumpingStation.id, "${id}")`, [
-    "PumpingStation.id",
-    "PumpingStation.name",
-    "PumpingStation.geoloc",
-    "PumpingStation.flow_rate",
-    "PumpingStation.projects",
-    "PumpingStation.energyprofiles",
-  ])
-}
+
 
 
 /**
@@ -231,23 +197,97 @@ export function searchPumpingStations(search: string): PumpingStation[] {
   const body = `
     PumpingStation.id
     PumpingStation.name
-    PumpingStation.geoloc
-    PumpingStation.flow_rate
-    PumpingStation.projects 
-    PumpingStation.energyprofiles 
     `
   return searchBySimilarity<PumpingStation>(DGRAPH_CONNECTION, embedding, "PumpingStation.embedding", body, topK)
 }
 
-export function getEnergyProfile(id  : string): EnergyProfile | null {
 
-  const body = `
-    EnergyProfile.id
-    EnergyProfile.name
-    EnergyProfile.day 
-    EnergyProfile.mont
-    EnergyProfile.price
-    EnergyProfile.pumpingstation_id
-  `
-  return getEntityById<EnergyProfile>(DGRAPH_CONNECTION, "EnergyProfile.id", id, body)
+import { Model, ModelInfo } from "@hypermode/modus-sdk-as/assembly/models"
+import { JSON } from "json-as"
+
+
+@json
+class ModelResponse {
+  actions: Array<f32> = []
+}
+
+@json
+class EnergyInput {
+  profiles: Array<f32>
+  prices: Array<f32>
+
+  constructor(profiles: Array<f32>, prices: Array<f32>) {
+    this.profiles = profiles
+    this.prices = prices
+  }
+}
+
+@json
+class EnergyOutput {
+  actions: Array<f32> = []
+}
+
+class EnergyOptimizerModel extends Model<EnergyInput, EnergyOutput> {
+  debug: boolean
+
+  constructor(info: ModelInfo) {
+    super(info)
+    this.debug = true
+  }
+
+  invoke(input: EnergyInput): EnergyOutput {
+    // Create output class
+    const output = new EnergyOutput()
+
+    // Log the input to verify data
+    console.log("Model Input - Profiles: " + input.profiles.toString())
+    console.log("Model Input - Prices: " + input.prices.toString())
+
+    // Call the actual model endpoint and get response
+    const response: EnergyOutput = super.invoke(input)
+    
+    // Log the response
+    console.log("Model Response: " + JSON.stringify(response))
+
+    // Copy the actions from response
+    if (response && response.actions) {
+      output.actions = response.actions
+    } else {
+      output.actions = new Array<f32>(24).fill(0)
+    }
+
+    return output
+  }
+}
+
+export function optimizeEnergy(profiles: Array<f32>, prices: Array<f32>): Array<f32> {
+  console.log("Function called with profiles length: " + profiles.length.toString())
+  console.log("Function called with prices length: " + prices.length.toString())
+
+  // Input validation
+  if (profiles.length != 24 || prices.length != 24) {
+    console.error("Invalid input: Profiles and prices must have length 24")
+    return new Array<f32>(24).fill(0)  // non-fatal error with default return
+  }
+
+  if (!profiles || !prices) {
+    throw new Error("Missing required input: profiles or prices")  // fatal error
+  }
+
+  // Get the model
+  const model = models.getModel<EnergyOptimizerModel>("energy-optimizer")
+  
+  // Create input
+  const input = new EnergyInput(profiles, prices)
+
+  // Invoke model and get output
+  const output = model.invoke(input)
+  console.log("Model output actions: " + output.actions.toString())
+  
+  if (!output.actions || output.actions.length === 0) {
+    console.error("Model returned no actions")
+    return new Array<f32>(24).fill(0)  // non-fatal error with default return
+  }
+
+  return output.actions
 }

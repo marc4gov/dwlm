@@ -15,5 +15,6 @@ node_modules/
 logs/
 
 # Ignore help files
-energy/debieten_per_dag/
-energy/prijzen_per_gemaal
+energy/
+energy_optimizer
+

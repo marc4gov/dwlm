@@ -8,7 +8,7 @@
     }
   },
   "connections": {
-    "postgresql":{
+    "postgresql": {
       "type": "postgresql", 
       "connString": "postgresql://{{PG_USER}}:{{PG_PASSWORD}}@localhost:5432/hhvr"
     },
@@ -37,6 +37,13 @@
       "headers": {
         "Authorization": "Bearer {{HF_API_KEY}}"
       }
+    },
+    "energy_model_server": {
+      "type": "http",
+      "baseUrl": "http://marc4gov.pythonanywhere.com/",
+      "headers": {
+        "Content-Type": "application/json"
+      }
     }
   },
   "models": {
@@ -54,6 +61,10 @@
       "sourceModel": "nlptown/bert-base-multilingual-uncased-sentiment",
       "connection": "huggingface",
       "path": "nlptown/bert-base-multilingual-uncased-sentiment"
+    },
+    "energy-optimizer": {
+      "connection": "energy_model_server",
+      "path": "/predict"
     }
   },
   "collections": {
