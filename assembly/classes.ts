@@ -1,35 +1,33 @@
 import { Point } from "@hypermode/modus-sdk-as/assembly/postgresql"
+import { Float } from "assemblyscript-json/assembly/JSON"
 import { JSON } from "json-as"
 
 
 @json
-export class PriceProfile {
-    @alias("PriceProfile.id")
+export class HourRate {
+    @alias("HourRate.id")
     id!: string
 
-    @alias("PriceProfile.pumpingstation")  
-    pumpingstation: PumpingStation | null = null    // Actually store the ID as string
-
-    @alias("PriceProfile.datestring")
-    datestring: string = ""
-
-    @alias("PriceProfile.price")
-    price: f32[] = []
+    @alias("HourRate.hours")
+    hours!: Float64Array
 }
 
 @json
-export class PowerProfile {
-    @alias("PowerProfile.id")
+export class Profile {
+    @alias("Profile.id")
     id!: string
 
-    @alias("PowerProfile.pumpingstation")  
-    pumpingstation: PumpingStation | null = null    // Actually store the ID as string
+    @alias("Profile.xid")
+    xid: String = ''
 
-    @alias("PowerProfile.datestring")
-    datestring: string = ""
+    @alias("Profile.flow_per_hour")  
+    flow_per_hour: HourRate | null = null  
 
-    @alias("PowerProfile.flowrate")
-    price: f32[] = []
+    @alias("Profile.price_per_hour")  
+    price_per_hour: HourRate | null = null  
+
+    @alias("Profile.action_per_hour")  
+    action_per_hour: HourRate | null = null  
 }
 
 @json
@@ -40,9 +38,7 @@ export class PumpingStation {
     @alias("PumpingStation.name")
     name: string = ""
 
-    @alias("PumpingStation.priceprofiles") 
-    priceprofiles: PriceProfile[] | null = null
+    @alias("PumpingStation.profiles") 
+    profiles: Profile[] | null = null
 
-    @alias("PumpingStation.powerprofiles") 
-    powerprofiles: PowerProfile[] | null = null
 }

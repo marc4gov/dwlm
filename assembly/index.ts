@@ -125,30 +125,43 @@ export function upsertPumpingStation(pumpingstation: PumpingStation): Map<string
 
 // Dgraph returns an array of objects
 @json
-class getPumpingStationResponse {
-  pumpingstations: PumpingStation[] = []
+class GetPumpingStationResponse {
+  ps: PumpingStation | null = null
 }
 
-// export function getPumpingStation2(name: string): PumpingStation {
-//   const statement = `  
-//   query getPumpingStation($name: string) {
-//     pumpingstations(func: eq(name, $name))  {
-//         name
-//         id
-//     }
-//   }`
+export function getPumpingStation2(xid: string): string | null {
+  const statement = `  
+  query getPumpingStation($xid: string) {
+    pumpingstations(func: eq(xid, $xid)) {
+      xid
+      name
+      profiles {
+        datestring
+        flow_per_hour {
+          hours
+        }
+        price_per_hour {
+          hours
+        }
+        action_per_hour {
+          hours
+        }
+      }
+    }
+  }`
 
-//   const vars = new dgraph.Variables()
-//   vars.set("$name", name)
+  const vars = new dgraph.Variables()
+  vars.set("$xid", xid)
 
-//   const resp = dgraph.execute(
-//     DGRAPH_CONNECTION,
-//     new dgraph.Request(new dgraph.Query(statement, vars)),
-//   )
-//   const pumpingstations = JSON.parse<getPumpingStationResponse>(resp.Json).pumpingstations
-//   return pumpingstations[0]
-// }
+  const resp = dgraph.execute(
+    DGRAPH_CONNECTION,
+    new dgraph.Request(new dgraph.Query(statement, vars)),
+  )
+  console.log(resp.Json)
+  const pumpingstation = JSON.parse<GetPumpingStationResponse>(resp.Json).ps
 
+  return resp.Json
+}
 
 /**
  * Get a pumping station info by its id
@@ -157,6 +170,9 @@ export function getPumpingStation(id  : string): PumpingStation | null {
 
   const body = `
     PumpingStation.id
+    PumpingStation.xid
+    PumpingStation.name
+    PumpingStation.profiles
   `
   return getEntityById<PumpingStation>(DGRAPH_CONNECTION, "PumpingStation.id", id, body)
 }
