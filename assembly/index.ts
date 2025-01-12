@@ -134,7 +134,7 @@ class GetPumpingStationResponse {
 
 export function getPumpingStation(xid: string): PumpingStation | null {
     const statement = `
-    query pumpingStation2($xid: string!) {
+    query pumpingStation($xid: string!) {
       station(func: eq(xid, $xid)) {
         id: uid
         xid

@@ -38,11 +38,12 @@
         "Authorization": "Bearer {{HF_API_KEY}}"
       }
     },
-    "energy_model_server": {
+    "energy-model-server": {
       "type": "http",
       "baseUrl": "http://marc4gov.pythonanywhere.com/",
       "headers": {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {{PA_API_KEY}}"
       }
     }
   },
@@ -63,7 +64,7 @@
       "path": "nlptown/bert-base-multilingual-uncased-sentiment"
     },
     "energy-optimizer": {
-      "connection": "energy_model_server",
+      "connection": "energy-model-server",
       "path": "/predict"
     }
   },
