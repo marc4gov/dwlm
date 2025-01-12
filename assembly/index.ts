@@ -132,7 +132,7 @@ class GetPumpingStationResponse {
   station: Array<PumpingStation> = []
 }
 
-export function getPumpingStation2(xid: string): PumpingStation | null {
+export function getPumpingStation(xid: string): PumpingStation | null {
     const statement = `
     query pumpingStation2($xid: string!) {
       station(func: eq(xid, $xid)) {
@@ -247,7 +247,7 @@ export function getPumpingStation2(xid: string): PumpingStation | null {
 /**
  * Get a pumping station info by its id
  */
-export function getPumpingStation(id  : string): PumpingStation | null {
+export function getPumpingStationAlias(id  : string): PumpingStation | null {
 
   const body = `
     PumpingStation.id

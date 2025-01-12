@@ -64,6 +64,8 @@ export class Profile {
     // @alias("Profile.xid")
     xid: string = ''
 
+    datestring: string = ''
+
     // @alias("Profile.flow_per_hour")  
     flow_per_hour: HourRate | null = null  
 
