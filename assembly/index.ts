@@ -278,15 +278,84 @@ export function searchPumpingStations(search: string): PumpingStation[] {
 }
 
 
-import { Model, ModelInfo } from "@hypermode/modus-sdk-as/assembly/models"
+// import { Model, ModelInfo } from "@hypermode/modus-sdk-as/assembly/models"
 
 
-@json
-class ModelResponse {
-  actions: Array<f32> = []
-}
+// @json
+// class ModelResponse {
+//   actions: Array<f32> = []
+// }
 
-@json
+// @json
+// class EnergyInput {
+//   profiles: Array<f32>
+//   prices: Array<f32>
+
+//   constructor(profiles: Array<f32>, prices: Array<f32>) {
+//     this.profiles = profiles
+//     this.prices = prices
+//   }
+// }
+
+// @json
+// class EnergyOutput {
+//   actions: Array<f32> = []
+// }
+
+// @json
+// class EnergyOptimizerModel extends Model<EnergyInput, EnergyOutput> {
+
+//   constructor(info: ModelInfo) {
+//     super(info)
+//   }
+
+//   invoke(input: EnergyInput): EnergyOutput {
+//     const result = super.invoke(input)
+
+//     // Create a new EnergyOutput instance and copy the data
+//     const output = new EnergyOutput()
+//     output.actions = result.actions
+//     return output
+//   }
+// }
+
+
+// export function optimizeEnergy(profiles: Array<f32>, prices: Array<f32>): Array<f32> {
+//   console.log("Function called with profiles length: " + profiles.length.toString())
+//   console.log("Function called with prices length: " + prices.length.toString())
+
+//   // Input validation
+//   if (profiles.length != 24 || prices.length != 24) {
+//     console.error("Invalid input: Profiles and prices must have length 24")
+//     return new Array<f32>(24).fill(0)
+//   }
+
+//   if (!profiles || !prices) {
+//     throw new Error("Missing required input: profiles or prices")
+//   }
+
+//   // Get the model
+//   const model = models.getModel<EnergyOptimizerModel>("energy-optimizer")
+  
+//   // Create input
+//   const input = new EnergyInput(profiles, prices)
+
+//   // Invoke model and get output
+//   const output = model.invoke(input)
+//   const actions = changetype<EnergyOutput>(output).actions
+//   console.log("Model output actions: " + actions.toString())
+  
+//   if (!actions || actions.length === 0) {
+//     console.error("Model returned no actions")
+//     return new Array<f32>(24).fill(0)
+//   }
+
+//   return actions  // Return the actions array directly
+// }
+
+import { http } from "@hypermode/modus-sdk-as"
+
+@json 
 class EnergyInput {
   profiles: Array<f32>
   prices: Array<f32>
@@ -302,53 +371,31 @@ class EnergyOutput {
   actions: Array<f32> = []
 }
 
-@json
-class EnergyOptimizerModel extends Model<EnergyInput, EnergyOutput> {
-
-  constructor(info: ModelInfo) {
-    super(info)
-  }
-
-  invoke(input: EnergyInput): EnergyOutput {
-    const result = super.invoke(input)
-
-    // Create a new EnergyOutput instance and copy the data
-    const output = new EnergyOutput()
-    output.actions = result.actions
-    return output
-  }
-}
-
-
 export function optimizeEnergy(profiles: Array<f32>, prices: Array<f32>): Array<f32> {
-  console.log("Function called with profiles length: " + profiles.length.toString())
-  console.log("Function called with prices length: " + prices.length.toString())
-
   // Input validation
   if (profiles.length != 24 || prices.length != 24) {
-    console.error("Invalid input: Profiles and prices must have length 24")
-    return new Array<f32>(24).fill(0)
+    throw new Error("Invalid input: Profiles and prices must have length 24")
   }
 
-  if (!profiles || !prices) {
-    throw new Error("Missing required input: profiles or prices")
-  }
-
-  // Get the model
-  const model = models.getModel<EnergyOptimizerModel>("energy-optimizer")
-  
-  // Create input
   const input = new EnergyInput(profiles, prices)
-
-  // Invoke model and get output
-  const output = model.invoke(input)
-  const actions = changetype<EnergyOutput>(output).actions
-  console.log("Model output actions: " + actions.toString())
+  const headers = http.Headers.from([
+    ["Content-Type", "application/json"]
+  ])
   
-  if (!actions || actions.length === 0) {
-    console.error("Model returned no actions")
-    return new Array<f32>(24).fill(0)
+  const options = new http.RequestOptions()
+  options.method = "POST"
+  options.headers = headers
+  options.body = http.Content.from(JSON.stringify(input))
+
+  const response = http.fetch(
+    "http://marc4gov.pythonanywhere.com/predict",
+    options
+  )
+  
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
   }
 
-  return actions  // Return the actions array directly
+  const output = response.json<EnergyOutput>()
+  return output.actions
 }
