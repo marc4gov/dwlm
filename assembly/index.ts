@@ -278,7 +278,7 @@ export function searchPumpingStations(search: string): PumpingStation[] {
 }
 
 
-// import { Model, ModelInfo } from "@hypermode/modus-sdk-as/assembly/models"
+import { Model, ModelInfo } from "@hypermode/modus-sdk-as/assembly/models"
 
 
 // @json
@@ -353,8 +353,6 @@ export function searchPumpingStations(search: string): PumpingStation[] {
 //   return actions  // Return the actions array directly
 // }
 
-import { http } from "@hypermode/modus-sdk-as"
-
 @json 
 class EnergyInput {
   profiles: Array<f32>
@@ -371,31 +369,41 @@ class EnergyOutput {
   actions: Array<f32> = []
 }
 
+@json
+class EnergyOptimizerModel extends Model<EnergyInput, EnergyOutput> {
+  debug: boolean
+
+  constructor(info: ModelInfo) {
+    super(info)
+    this.debug = true
+  }
+
+  invoke(input: EnergyInput): EnergyOutput {
+    console.log("About to invoke model with input: " + JSON.stringify(input))
+    const result = super.invoke(input)
+    console.log("Raw model result: " + JSON.stringify(result))
+    return changetype<EnergyOutput>(result)
+  }
+}
+
 export function optimizeEnergy(profiles: Array<f32>, prices: Array<f32>): Array<f32> {
+  console.log("Function called with profiles length: " + profiles.length.toString())
+  console.log("Function called with prices length: " + prices.length.toString())
+
   // Input validation
   if (profiles.length != 24 || prices.length != 24) {
-    throw new Error("Invalid input: Profiles and prices must have length 24")
+    return new Array<f32>(24).fill(0) // Return empty array instead of throwing
   }
 
+  console.log("Getting model instance...")
+  const model = models.getModel<EnergyOptimizerModel>("energy-optimizer")
+  
+  console.log("Creating input...")
   const input = new EnergyInput(profiles, prices)
   
-  // Keep the full URL for compatibility
-  const url = "http://marc4gov.pythonanywhere.com/predict"
+  console.log("Invoking model...")
+  const output = model.invoke(input)
+  console.log("Model invocation complete")
   
-  const options = new http.RequestOptions()
-  options.method = "POST"
-  // Only add Content-Type header, Authorization comes from yaml
-  options.headers = http.Headers.from([
-    ["Content-Type", "application/json"]
-  ])
-  options.body = http.Content.from(JSON.stringify(input))
-
-  const response = http.fetch(url, options)
-  
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
-
-  const output = response.json<EnergyOutput>()
   return output.actions
 }
