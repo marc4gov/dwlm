@@ -42,8 +42,7 @@
       "type": "http",
       "baseUrl": "http://marc4gov.pythonanywhere.com/",
       "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer {{PA_API_KEY}}"
+        "Content-Type": "application/json"
       }
     }
   },

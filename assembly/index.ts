@@ -335,6 +335,38 @@ class EnergyOptimizerModel extends Model<EnergyInput, EnergyOutput> {
   }
 }
 
+// export function optimizeEnergy(profiles: Array<f32>, prices: Array<f32>): Array<f32> {
+//   console.log("Function called with profiles length: " + profiles.length.toString())
+//   console.log("Function called with prices length: " + prices.length.toString())
+
+//   // Input validation
+//   if (profiles.length != 24 || prices.length != 24) {
+//     console.error("Invalid input: Profiles and prices must have length 24")
+//     return new Array<f32>(24).fill(0)  // non-fatal error with default return
+//   }
+
+//   if (!profiles || !prices) {
+//     throw new Error("Missing required input: profiles or prices")  // fatal error
+//   }
+
+//   // Get the model
+//   const model = models.getModel<EnergyOptimizerModel>("energy-optimizer")
+  
+//   // Create input
+//   const input = new EnergyInput(profiles, prices)
+
+//   // Invoke model and get output
+//   const output = model.invoke(input)
+//   console.log("Model output actions: " + output.actions.toString())
+  
+//   if (!output.actions || output.actions.length === 0) {
+//     console.error("Model returned no actions")
+//     return new Array<f32>(24).fill(0)  // non-fatal error with default return
+//   }
+
+//   return output.actions
+// }
+
 export function optimizeEnergy(profiles: Array<f32>, prices: Array<f32>): Array<f32> {
   console.log("Function called with profiles length: " + profiles.length.toString())
   console.log("Function called with prices length: " + prices.length.toString())
@@ -342,11 +374,11 @@ export function optimizeEnergy(profiles: Array<f32>, prices: Array<f32>): Array<
   // Input validation
   if (profiles.length != 24 || prices.length != 24) {
     console.error("Invalid input: Profiles and prices must have length 24")
-    return new Array<f32>(24).fill(0)  // non-fatal error with default return
+    return new Array<f32>(24).fill(0)
   }
 
   if (!profiles || !prices) {
-    throw new Error("Missing required input: profiles or prices")  // fatal error
+    throw new Error("Missing required input: profiles or prices")
   }
 
   // Get the model
@@ -357,12 +389,13 @@ export function optimizeEnergy(profiles: Array<f32>, prices: Array<f32>): Array<
 
   // Invoke model and get output
   const output = model.invoke(input)
-  console.log("Model output actions: " + output.actions.toString())
+  const actions = changetype<EnergyOutput>(output).actions
+  console.log("Model output actions: " + actions.toString())
   
-  if (!output.actions || output.actions.length === 0) {
+  if (!actions || actions.length === 0) {
     console.error("Model returned no actions")
-    return new Array<f32>(24).fill(0)  // non-fatal error with default return
+    return new Array<f32>(24).fill(0)
   }
 
-  return output.actions
+  return actions  // Return the actions array directly
 }
