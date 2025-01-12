@@ -102,6 +102,9 @@ import {
   getEntityById,
   addEmbeddingToJson,
 } from "./dgraph-utils"
+import { JSON } from "json-as"
+
+
 
 const DGRAPH_CONNECTION = "dgraph"
 
@@ -126,29 +129,105 @@ export function upsertPumpingStation(pumpingstation: PumpingStation): Map<string
 // Dgraph returns an array of objects
 @json
 class GetPumpingStationResponse {
-  ps: PumpingStation | null = null
+  station: Array<PumpingStation> = []
 }
 
-export function getPumpingStation2(xid: string): string | null {
-  const statement = `  
-  query getPumpingStation($xid: string) {
-    pumpingstations(func: eq(xid, $xid)) {
-      xid
-      name
-      profiles {
-        datestring
-        flow_per_hour {
-          hours
-        }
-        price_per_hour {
-          hours
-        }
-        action_per_hour {
-          hours
+export function getPumpingStation2(xid: string): PumpingStation | null {
+    const statement = `
+    query pumpingStation2($xid: string!) {
+      station(func: eq(xid, $xid)) {
+        id: uid
+        xid
+        name
+        profiles {
+          id: uid
+          datestring
+          flow_per_hour {
+            id: uid
+            h0
+            h1
+            h2
+            h3
+            h4
+            h5
+            h6
+            h7
+            h8
+            h9
+            h10
+            h11
+            h12
+            h13
+            h14
+            h15
+            h16
+            h17
+            h18
+            h19
+            h20
+            h21
+            h22
+            h23
+          }
+          price_per_hour {
+            id: uid
+            h0
+            h1
+            h2
+            h3
+            h4
+            h5
+            h6
+            h7
+            h8
+            h9
+            h10
+            h11
+            h12
+            h13
+            h14
+            h15
+            h16
+            h17
+            h18
+            h19
+            h20
+            h21
+            h22
+            h23
+          }
+          action_per_hour {
+            id: uid
+            h0
+            h1
+            h2
+            h3
+            h4
+            h5
+            h6
+            h7
+            h8
+            h9
+            h10
+            h11
+            h12
+            h13
+            h14
+            h15
+            h16
+            h17
+            h18
+            h19
+            h20
+            h21
+            h22
+            h23
+          }
         }
       }
-    }
-  }`
+    }`
+  
+  
 
   const vars = new dgraph.Variables()
   vars.set("$xid", xid)
@@ -157,12 +236,14 @@ export function getPumpingStation2(xid: string): string | null {
     DGRAPH_CONNECTION,
     new dgraph.Request(new dgraph.Query(statement, vars)),
   )
-  console.log(resp.Json)
-  const pumpingstation = JSON.parse<GetPumpingStationResponse>(resp.Json).ps
-
-  return resp.Json
+  
+  // Then parse the pumpingStation2 string which contains the actual data
+  const pumpingstations = JSON.parse<GetPumpingStationResponse>(resp.Json).station
+  
+  // Return the first station that matches
+  return pumpingstations[0]
+  // return resp.Json
 }
-
 /**
  * Get a pumping station info by its id
  */
@@ -198,7 +279,6 @@ export function searchPumpingStations(search: string): PumpingStation[] {
 
 
 import { Model, ModelInfo } from "@hypermode/modus-sdk-as/assembly/models"
-import { JSON } from "json-as"
 
 
 @json
