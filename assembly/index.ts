@@ -378,19 +378,19 @@ export function optimizeEnergy(profiles: Array<f32>, prices: Array<f32>): Array<
   }
 
   const input = new EnergyInput(profiles, prices)
-  const headers = http.Headers.from([
-    ["Content-Type", "application/json"]
-  ])
+  
+  // Keep the full URL for compatibility
+  const url = "http://marc4gov.pythonanywhere.com/predict"
   
   const options = new http.RequestOptions()
   options.method = "POST"
-  options.headers = headers
+  // Only add Content-Type header, Authorization comes from yaml
+  options.headers = http.Headers.from([
+    ["Content-Type", "application/json"]
+  ])
   options.body = http.Content.from(JSON.stringify(input))
 
-  const response = http.fetch(
-    "http://marc4gov.pythonanywhere.com/predict",
-    options
-  )
+  const response = http.fetch(url, options)
   
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
