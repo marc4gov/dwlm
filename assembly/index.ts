@@ -381,14 +381,13 @@ class EnergyOptimizerModel extends Model<EnergyInput, EnergyOutput> {
   }
 
   invoke(input: EnergyInput): EnergyOutput {
-    console.log("About to invoke model with input: " + JSON.stringify(input))
-    // Instead of using super.invoke, let's make the HTTP request directly
+    console.log("About to invoke model with input: " + JSON.stringify<EnergyInput>(input))
     const options = new http.RequestOptions()
     options.method = "POST"
     options.headers = http.Headers.from([
       ["Content-Type", "application/json"]
     ])
-    options.body = http.Content.from(JSON.stringify(input))
+    options.body = http.Content.from(JSON.stringify<EnergyInput>(input))
 
     const response = http.fetch(
       "http://marc4gov.pythonanywhere.com/predict",
@@ -400,7 +399,9 @@ class EnergyOptimizerModel extends Model<EnergyInput, EnergyOutput> {
       return new EnergyOutput()
     }
 
-    return response.json<EnergyOutput>()
+    const output = response.json<EnergyOutput>()
+    console.log("Parsed response: " + JSON.stringify<EnergyOutput>(output))
+    return output
   }
 }
 
@@ -421,7 +422,12 @@ export function optimizeEnergy(profiles: Array<f32>, prices: Array<f32>): Array<
   
   console.log("Invoking model...")
   const output = model.invoke(input)
-  console.log("Model invocation complete")
   
+  if (output.actions.length === 0) {
+    console.log("No actions returned, using default values")
+    return new Array<f32>(24).fill(0)
+  }
+  
+  console.log("Model invocation complete with " + output.actions.length.toString() + " actions")
   return output.actions
 }
