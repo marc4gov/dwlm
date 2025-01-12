@@ -353,6 +353,8 @@ import { Model, ModelInfo } from "@hypermode/modus-sdk-as/assembly/models"
 //   return actions  // Return the actions array directly
 // }
 
+import { http } from "@hypermode/modus-sdk-as"
+
 @json 
 class EnergyInput {
   profiles: Array<f32>
@@ -380,9 +382,25 @@ class EnergyOptimizerModel extends Model<EnergyInput, EnergyOutput> {
 
   invoke(input: EnergyInput): EnergyOutput {
     console.log("About to invoke model with input: " + JSON.stringify(input))
-    const result = super.invoke(input)
-    console.log("Raw model result: " + JSON.stringify(result))
-    return changetype<EnergyOutput>(result)
+    // Instead of using super.invoke, let's make the HTTP request directly
+    const options = new http.RequestOptions()
+    options.method = "POST"
+    options.headers = http.Headers.from([
+      ["Content-Type", "application/json"]
+    ])
+    options.body = http.Content.from(JSON.stringify(input))
+
+    const response = http.fetch(
+      "http://marc4gov.pythonanywhere.com/predict",
+      options
+    )
+    
+    if (!response.ok) {
+      console.log("HTTP request failed with status: " + response.status.toString())
+      return new EnergyOutput()
+    }
+
+    return response.json<EnergyOutput>()
   }
 }
 
@@ -392,7 +410,7 @@ export function optimizeEnergy(profiles: Array<f32>, prices: Array<f32>): Array<
 
   // Input validation
   if (profiles.length != 24 || prices.length != 24) {
-    return new Array<f32>(24).fill(0) // Return empty array instead of throwing
+    return new Array<f32>(24).fill(0)
   }
 
   console.log("Getting model instance...")
